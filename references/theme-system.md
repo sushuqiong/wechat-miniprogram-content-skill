@@ -1,66 +1,66 @@
-# 主题令牌系统与 UX 差异化
+# Theme-Token System and UX Differentiation
 
-## 目录
+## Contents
 
-1. 令牌设计：一个主题块只覆写变量
-2. 主题表结构（theme.js）
-3. 三条硬规则
-4. 背景图主题的特殊处理
-5. UX 差异化清单（与同系产品拉开距离）
-6. 自检门禁判据
+1. Token design: a theme block only overrides variables
+2. Theme table structure (theme.js)
+3. Three hard rules
+4. Special handling for background-image themes
+5. UX differentiation checklist (distancing sibling products)
+6. Gate criteria
 
-## 1. 令牌设计
+## 1. Token design
 
-全局在 `page` 上定义一组语义变量（--primary/--text/--panel/--code-bg/--tag-* 等），每个主题是一个 `.theme-<id>` 块，**只覆写变量，不写任何布局**。页面样式全部 `var(--xxx)`。换肤 = 切根节点 class + 重下发导航栏/tabBar 颜色，页面代码零改动。
+Define a set of semantic variables on `page` (--primary / --text / --panel / --code-bg / --tag-*, etc.). Each theme is a single `.theme-<id>` block that **only overrides variables — never touches layout**. All page styles consume `var(--xxx)`. Switching themes = swapping the root class + re-applying nav bar / tabBar colors, with zero page-code changes.
 
-语义变量分层：
+Semantic variable layers:
 
-- 品牌层：--primary / --primary-2 / --primary-soft
-- 文字层：--text / --sub / --muted
-- 容器层：--panel / --panel-2 / --line / --shadow
-- 功能层：--code-bg / --deco / --tag-beginner(-bg) / --tag-advanced(-bg) / --warn-* / --note-*
-- 背景图层：--bg-img / --bg-size / --veil
+- Brand: --primary / --primary-2 / --primary-soft
+- Text: --text / --sub / --muted
+- Containers: --panel / --panel-2 / --line / --shadow
+- Functional: --code-bg / --deco / --tag-beginner(-bg) / --tag-advanced(-bg) / --warn-* / --note-*
+- Background image: --bg-img / --bg-size / --veil
 
-## 2. 主题表结构（theme.js）
+## 2. Theme table structure (theme.js)
 
-每个主题一条记录：`{ id, name, desc, nav, front, tabBg, tabColor, tabSel, dark, bgImg, primary, swatch[] }`。
+One record per theme: `{ id, name, desc, nav, front, tabBg, tabColor, tabSel, dark, bgImg, primary, swatch[] }`.
 
-- `dark` 标志驱动：导航栏 frontColor、tabBar borderStyle、页面 `backgroundTextStyle`、深色下品牌区的磨砂底适配。
-- `swatch` 给换肤 UI 展示用（无图主题展示色点）。
-- `DEFAULT_ID` 常量集中定义，所有页面 data 的默认值引用它，**不写字面量**（改名后字面量会静默失效）。
+- The `dark` flag drives: nav bar frontColor, tabBar borderStyle, page `backgroundTextStyle`, and the frosted-light brand-area adaptation under dark themes.
+- `swatch` feeds the theme-picker UI (color dots for image-less themes).
+- `DEFAULT_ID` is defined once as a constant; every page's `data` default references it — **never a string literal** (literals silently break on renames).
 
-## 3. 三条硬规则
+## 3. Three hard rules
 
-1. **每个主题块必须定义全部必需变量**——缺一个，该处就退回默认色，出现"半套主题"。门禁强制检查。
-2. **有背景图的主题必须定义 --veil**（压暗遮罩）——否则正文压在图上读不清。门禁强制检查。
-3. **页面里不允许出现任何主题的硬编码色**——旧品牌色的十六进制值写进门禁，残留即 FAIL。
+1. **Every theme block must define all required variables** — miss one and that spot falls back to the default color: a "half-applied theme". Enforced by the gate.
+2. **Any theme with a background image must define --veil** (a dimming overlay) — otherwise body text sits on the image unreadably. Enforced by the gate.
+3. **No hardcoded theme colors anywhere in pages** — the old brand hex values are written into the gate; any residue fails the build.
 
-## 4. 背景图主题的特殊处理
+## 4. Special handling for background-image themes
 
-- 图放 `images/theme/`，单张 <100KB（门禁卡），宽 640px 足够（全屏铺 + 遮罩）。
-- 深色主题下，若 logo/标题是深色字，品牌区改浅色磨砂底（rgba(252,251,255,.93)），否则看不清。
-- 无图主题（如默认主题）纯 CSS 变量即可，不强制配图——省体积。
-- 背景图版权：原创生成，裁水印、逐张核验，见 references/methodology.md。
+- Images live in `images/theme/`; each <100 KB (gate-enforced), 640 px wide is enough (full-bleed plus veil).
+- Under dark themes, if the logo/title uses dark glyphs, give the brand area a light frosted background (rgba(252,251,255,.93)) or it becomes unreadable.
+- Image-less themes (e.g. the default) are pure CSS variables — do not force an image; saves package size.
+- Background-image copyright: original generation, watermark cropped, manually verified per image. See references/methodology.md.
 
-## 5. UX 差异化清单
+## 5. UX differentiation checklist
 
-如果你的产品矩阵里有同系产品（如 R 语言版与 Julia 版），刻意做差异，避免"换皮"观感：
+If your product family has sibling apps (e.g. an R-language edition and a Julia edition), differentiate deliberately to avoid a "reskin" impression:
 
-1. **换肤入口形态**：横向滑动的主题画廊（大卡片 + 真实背景图预览），而不是小色块网格。
-2. **翻卡手势**：每日一卡支持左右滑动（横向位移阈值 + 纵向容差 + 260ms 防连点），不只是按钮。
-3. **搜索反馈**：标题里高亮命中关键词。
-4. **收藏排序**：按收藏时间倒序，刚收藏的在最前。
-5. **清空数据**：同步重置主题并重下发导航栏/tabBar，状态不跳变。
-6. **列表返回**：从详情返回不重置分页（筛选条件没变就不重算）。
+1. **Theme picker form**: a horizontally scrolling theme gallery (large cards with real background previews), not a small color-swatch grid.
+2. **Card-flip gesture**: the daily card supports horizontal swiping (horizontal displacement threshold + vertical tolerance + 260 ms debounce), not just buttons.
+3. **Search feedback**: highlight the matched keyword inside result titles.
+4. **Favorites ordering**: newest favorite first — the just-favorited card sits at the top.
+5. **Data clearing**: also resets the theme and re-applies nav bar / tabBar colors; no state jumps.
+6. **List return**: coming back from detail does not reset pagination (no recompute when filters are unchanged).
 
-## 6. 自检门禁判据（scripts/check_theme.py）
+## 6. Gate criteria (scripts/check_theme.py)
 
-1. 主题表每个 id 在 app.wxss 有对应 `.theme-<id>` 块
-2. 每块定义全部必需变量
-3. DEFAULT_ID 在主题表内
-4. 有 bgImg 的主题定义了 --veil
-5. bgImg 指向的文件存在且 <100KB
-6. 全项目无失效主题选择器（改名后残留的 `.theme-<旧名>`）
-7. 全项目无旧品牌色硬编码残留
+1. Every id in the theme table has a matching `.theme-<id>` block in app.wxss
+2. Every block defines all required variables
+3. DEFAULT_ID exists in the theme table
+4. Themes with bgImg define --veil
+5. Files referenced by bgImg exist and are <100 KB
+6. No stale theme selectors project-wide (leftover `.theme-<old-name>` after renames)
+7. No hardcoded legacy brand colors project-wide
 
-运行：`python scripts/check_theme.py <小程序源码目录>`，全部 PASS 退出码 0。
+Run: `python scripts/check_theme.py <miniprogram source dir>` — exit code 0 when all pass.

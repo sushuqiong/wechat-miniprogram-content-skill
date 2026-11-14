@@ -1,68 +1,68 @@
-# 质量门禁体系与常见问题清单
+# Quality Gates and the Real-World Pitfall List
 
-## 目录
+## Contents
 
-1. 门禁设计原则
-2. 最小门禁集（六道）
-3. 每道门禁的判据要点
-4. 常见问题清单（真实事故反推）
-5. 最佳实践
+1. Gate design principles
+2. The minimum gate set (six gates)
+3. Criteria per gate
+4. Pitfall list (reverse-engineered from real incidents)
+5. Best practices
 
-## 1. 门禁设计原则
+## 1. Gate design principles
 
-- **检查脚本即规格说明书**：每条规则都必须能被脚本判定；判不了的规则等于没有规则。
-- **每道一个独立脚本**，命名即用途（check_order / check_consistency / ...），可单独运行、单独失败。
-- **每次交付前全部真跑**，不引用"上次跑过"的结果。内容项目里数据天天变，历史结论不作数。
-- 输出统一 `PASS/FAIL + 判据名 + 失败明细`，退出码非零即失败，方便串进任何流水线。
+- **The check script is the specification**: every rule must be script-decidable; a rule that cannot be checked does not exist.
+- **One standalone script per gate**, named after its purpose (check_order / check_consistency / ...), independently runnable, independently failable.
+- **Rerun everything before every delivery**; never cite "it passed last time". In content projects the data changes daily — historical conclusions are worthless.
+- Uniform output: `PASS/FAIL + criterion name + failure detail`; non-zero exit code on failure, so it plugs into any pipeline.
 
-## 2. 最小门禁集
+## 2. The minimum gate set
 
-| # | 门禁 | 防什么 |
+| # | Gate | What it prevents |
 | --- | --- | --- |
-| 1 | check_order 排产检查 | 内容重复/遗漏、排期违规 |
-| 2 | check_consistency 对版检查 | 索引与全文漂移、路由错、缺图 |
-| 3 | check_milestone_sum 体积台账 | 主包/分包超限（上架硬失败） |
-| 4 | check_release 发布静态自检 | JS 语法错、WXML 未闭合、事件缺绑定、引用不存在的图、含不支持的格式（webp） |
-| 5 | runtime_check 行为断言 | 静态检查查不出的运行时逻辑错 |
-| 6 | check_theme 主题令牌自检 | "半套主题"（有主题系统时必加） |
+| 1 | check_order — schedule | Duplicate/missing content, scheduling violations |
+| 2 | check_consistency — cross-version | Index/full-text drift, broken routing, missing images |
+| 3 | check_milestone_sum — size ledger | Package over the limit (a hard release failure) |
+| 4 | check_release — static release checks | JS syntax errors, unclosed WXML tags, missing event bindings, references to nonexistent images, unsupported formats (webp) |
+| 5 | runtime_check — behavioral assertions | Runtime logic errors that static checks cannot see |
+| 6 | check_theme — theme tokens | "Half-applied themes" (mandatory once theming exists) |
 
-## 3. 判据要点
+## 3. Criteria per gate
 
-**check_order**：总量不重不漏；同分类相邻间隔 ≥N 天；七日峰值 ≤ 上限；难度单调渐进（允许平台期）；末 7 天覆盖全部分类。
+**check_order**: total count with no duplicates or gaps; same-category spacing ≥ N days; seven-day peak ≤ cap; monotonically progressive difficulty (plateaus allowed); final 7 days cover every category.
 
-**check_consistency**：索引条数 = 全文条数；id 集合完全相等；每条索引指向的图文件存在；分包路由规则（如奇偶）与数据实际分布对拍一致。
+**check_consistency**: index count = full-text count; ID sets exactly equal; every image path in the index exists on disk; the subpackage routing rule (e.g. odd/even) matches the actual data distribution.
 
-**check_milestone_sum**：遍历三个包，输出文件数/源体积/压缩估算；主包对 1950KB 卡线、分包对 2048KB 上限，超限即 FAIL。
+**check_milestone_sum**: walk all three packages, print file count / source size / compressed estimate; main package against the 1950 KB line, subpackages against the 2048 KB cap; any excess is FAIL.
 
-**check_release**（静态）：全部 .js 过语法检查（可用 `node --check`）；.wxml 标签配对；wxml 中 `bind*`/ `catch*` 引用的方法在对应 .js 里存在；wxml/wxss 引用的图片路径存在；无 webp（老基础库不支持）；代码高亮处理不吞字符（对拍原文与高亮输出的纯文本）。
+**check_release** (static): every .js passes a syntax check (`node --check`); WXML tags balanced; every `bind*`/`catch*` handler referenced in WXML exists in the matching .js; image paths referenced in WXML/WXSS exist; no webp (unsupported on older base libraries); the code highlighter does not swallow characters (diff source text vs highlighted plain-text output).
 
-**runtime_check（行为断言）**：用 Node 手写一个 mock `wx`（storage / navigate / toast / clipboard / reportEvent / setNavigationBarColor / setTabBarStyle 等），再 mock Page/App/getCurrentPages，**直接 require 真实页面代码跑**：翻卡边界（第一张上一张/最后一张下一张）、屏蔽窗口（防连点）、复制成功与失败降级、清空数据后各状态复位、分享返回的对象结构、埋点调用的分母正确。行为断言的数量会持续增加，每修一个 bug 补一条。
+**runtime_check** (behavioral assertions): hand-write a mock `wx` in Node (storage / navigate / toast / clipboard / reportEvent / setNavigationBarColor / setTabBarStyle, etc.), mock Page/App/getCurrentPages, then **require the real page code and drive it**: swipe boundaries (previous on first card / next on last), the debounce window, copy success and failure fallback, state reset after data clearing, the share object shape, analytics denominators. The assertion count grows over time — add one for every bug fixed.
 
-**check_theme**：见 references/theme-system.md，脚本为 scripts/check_theme.py。
+**check_theme**: see references/theme-system.md; script is scripts/check_theme.py.
 
-## 4. 常见问题清单（真实事故反推）
+## 4. Pitfall list (reverse-engineered from real incidents)
 
-### 换肤/样式
-1. 硬编码品牌色散落在页面 wxss/wxml 里 → 换肤后半蓝半紫。改色必须全局替换，并把旧色值写进门禁。
-2. 「常见坑」「对照」等色块写死浅色底深文字 → 深色主题下不可读。一律改用主题变量（--warn-bg/--note-bg 等）。
-3. 开关组件 `color="#xxx"` 写死 → 换肤后仍是旧色。改用 `color="var(--primary)"`。
-4. 深色主题下 `backgroundTextStyle` 固定 dark → 下拉刷新加载点看不见。跟随主题 dark 标志。
+### Theming / styles
+1. Hardcoded brand colors scattered across page WXSS/WXML → half-old-color after re-theming. Replace globally, then gate the old hex values.
+2. "Pitfall" / "comparison" blocks with hardcoded light backgrounds and dark text → unreadable in dark themes. Always use theme variables (--warn-bg / --note-bg, etc.).
+3. Switch component with `color="#xxx"` hardcoded → stays the old color after re-theming. Use `color="var(--primary)"` style values.
+4. `backgroundTextStyle` fixed to dark → invisible pull-down spinner in dark themes. Follow the theme's dark flag.
 
-### 状态/交互
-5. 清空数据清了 theme 键但页面与导航栏不重置 → 下次进页面突然跳回默认主题。清空后必须：重置全部持久化状态 + 重新下发导航栏/tabBar 颜色 + 刷新当前页 data。
-6. 列表页 `onShow` 无条件重算列表 → 分页加载到 120 条后从详情返回缩回 60 条，用户以为跳回顶部。用「筛选条件变了才重算」的脏检查。
-7. 收藏列表按 id 排序 → 刚收藏的沉底，用户以为没收藏成功。按收藏时间倒序。
-8. 翻卡无防连点 → 动画抽搐。加 260ms 屏蔽窗口，并补行为断言。
-9. 「点击查看大图」实际跳详情页 → 文案与行为不符。要么真放大（previewImage），要么改文案。
+### State / interaction
+5. Clearing data deletes the theme key but does not reset the page or nav bar → theme jumps back to default on next entry. After clearing: reset all persisted state + re-apply nav bar / tabBar colors + refresh current page data.
+6. List page recomputing unconditionally in `onShow` → after paginating to 120 items, returning from detail collapses back to 60; feels like a jump to top. Use a dirty check: recompute only when filters changed.
+7. Favorites sorted by card ID → the just-favorited card sinks to the bottom; users think favoriting failed. Sort by favorite time, newest first.
+8. No debounce on card swiping → animation stutters on rapid taps. Add a ~260 ms lock window, plus a behavioral assertion.
+9. "Tap to view full image" that actually navigates to the detail page → copy does not match behavior. Either truly preview (previewImage) or fix the copy.
 
-### 工程
-10. 详情页模板与分包副本漂移 → 单一来源 + 脚本下发 + 下发后一致性检查。
-11. data 默认值写死 `'brand'` 之类的旧主题 id → 改名后静默失效。默认值引用 theme.js 的 DEFAULT_ID 常量。
-12. AI 生成图带水印入库 → 见 references/methodology.md 配图管线。
+### Engineering
+10. Template and subpackage copies drift → single source + scripted distribution + post-distribution consistency check.
+11. `data` defaults hardcoding an old theme id like `'brand'` → silently broken after a rename. Reference the DEFAULT_ID constant from theme.js.
+12. AI-generated images committed with watermarks → see the illustration pipeline in references/methodology.md.
 
-## 5. 最佳实践
+## 5. Best practices
 
-- 新加一类资产（主题、图、数据文件）的同时，**同一次提交里加它的门禁**，不要后补。
-- 门禁失败明细要指到文件与条目（"FAIL 变量齐备 .theme-aurora --line"），不要只报数量。
-- 行为断言用真实页面代码跑，不复刻逻辑到测试里——复刻的测试会随着代码漂移而绿得毫无意义。
-- 体积台账每次构建刷新并写进 README，形成体积变化的历史轨迹。
+- When you add a new asset class (themes, images, data files), **add its gate in the same commit** — do not defer it.
+- Failure details should point at files and entries ("FAIL variables missing .theme-aurora --line"), not just counts.
+- Behavioral assertions must run the real page code — do not re-implement the logic in the test; a copied test keeps passing while the code drifts.
+- Refresh the size ledger on every build and record it in the README, creating a size history.

@@ -1,57 +1,57 @@
-# 方法论：内容流水线与工程结构
+# Methodology: Content Pipeline and Project Structure
 
-内容型小程序的本质是「把一份内容数据集装进 2MB 主包 + 分包，并保证它随时间不坏」。本章是流水线的每一步及其理由。
+A content mini program is, at its core, "pack a content dataset into a 2 MB main package plus subpackages — and keep it from rotting over time". This chapter walks through each pipeline stage and why it exists.
 
-## 目录
+## Contents
 
-1. 选题矩阵与排产表
-2. 双层数据结构（索引 / 全文）
-3. 分包策略与体积台账
-4. 配图管线：代码产出，不用网图
-5. 单一来源与模板下发
-6. README 作为项目状态板
+1. Topic matrix and production schedule
+2. Two-layer data (index / full text)
+3. Subpackage strategy and the size ledger
+4. Illustration pipeline: produced by code, never scraped
+5. Single source of truth and template distribution
+6. README as the project status board
 
-## 1. 选题矩阵与排产表
+## 1. Topic matrix and production schedule
 
-先定总量和结构，再写内容。以 365 张卡片为例：
+Fix the total and the structure first, then write content. Using 365 cards as the example:
 
-- **总量 × 分类 × 难度**三个维度先画矩阵（如 365 张 / 10 分类 / 入门 120 + 进阶 160 + 实战 85），每张卡在矩阵里有唯一格子，写完即能自动校验「不重不漏」。
-- **排产表**把卡片 id 映射到日期（每日一卡），规则用判据固定下来：相邻同分类间隔 ≥N 天、七日峰值上限、难度渐进、末段覆盖全部分类。规则写成脚本判据（check_order），不靠人工抽查。
-- 排产表是**数据文件**（如 cards_365.json），不是代码里的魔法数组，这样校验脚本和运行时读的是同一份。
+- Draw the matrix across three axes — **total × categories × difficulty** (e.g. 365 cards / 10 categories / 120 beginner + 160 intermediate + 85 applied). Every card owns a unique cell, so "no duplicates, no gaps" becomes machine-checkable the moment writing finishes.
+- The **production schedule** maps card IDs to calendar dates (for the daily card). Pin the rules down as criteria: same-category spacing ≥ N days, a cap on seven-day peaks, progressive difficulty, full category coverage in the final stretch. Encode the rules as a gate script (check_order); do not rely on spot checks.
+- Keep the schedule as a **data file** (e.g. cards_365.json), not a magic array in code, so the gate script and the runtime read the same source.
 
-## 2. 双层数据结构
+## 2. Two-layer data
 
-- **索引层**（cards-index.js）：每张卡只有 id/标题/分类/难度/摘要/图路径，常驻主包。列表页、搜索、每日一卡只读索引。
-- **全文层**（pkgA/pkgB data）：完整正文、代码、输出示例，放分包，进详情页才加载。
+- **Index layer** (cards-index.js): only id/title/category/difficulty/summary/image path per card; always in the main package. Lists, search, and the daily card read only the index.
+- **Full-text layer** (pkgA/pkgB data): complete body, code, sample output; lives in subpackages, loaded when entering the detail page.
 
-好处：主包小、列表快；搜索在索引层做，不需要把全文读进内存。代价是要维护「索引与全文对版」的一致性检查（check_consistency：数量、id 集合、奇偶路由一致、图路径存在）。
+Payoff: small main package, fast lists; search runs on the index without loading full text into memory. The cost is maintaining an index/full-text consistency gate (check_consistency: counts, ID sets, routing parity, image paths exist).
 
-## 3. 分包策略与体积台账
+## 3. Subpackage strategy and the size ledger
 
-- 微信小程序主包上限 2MB，单分包上限 2MB。**卡线不要顶格**：项目里主包目标线设为 1950KB，留 50KB 缓冲。
-- 按内容近似对半切两个分包（如奇数卡进 pkgA、偶数卡进 pkgB），路由规则简单到可以用脚本对拍。
-- **体积台账**（check_milestone_sum）：每次构建输出「文件数 / 源文件体积 / 压缩估算」三列，写进 README。体积问题要在加内容的当天暴露，而不是上架前一天。
+- WeChat caps the main package at 2 MB and each subpackage at 2 MB. **Do not ride the limit** — in the source project the main-package target line is 1950 KB, keeping a 50 KB buffer.
+- Split content roughly in half across two subpackages (e.g. odd cards → pkgA, even cards → pkgB) so the routing rule is simple enough to verify by script.
+- **Size ledger** (check_milestone_sum): every build prints "file count / source size / compressed estimate" per package and writes it into the README. Size problems should surface the day content is added, not the day before release.
 
-## 4. 配图管线：代码产出，不用网图
+## 4. Illustration pipeline: produced by code, never scraped
 
-- 内容配图（如代码运行结果图）由内容代码**真实产出**：跑代码 → 出图 → 压缩进包。这保证图与代码一致，且版权归你。
-- 需要氛围图（如主题背景）时，**不要网络搜图**：个人主体小程序放来源不明的网图，是版权投诉与审核驳回最高频的两个原因。改用原创生成（AI 生成或自绘），生成后必须：
-  1. 裁掉生成工具的水印（常在右下角，约 5% 高度）；
-  2. 压缩到目标尺寸与单张体积上限（如 640px / <100KB）；
-  3. 逐张人工核验：无文字、无水印、无清晰人脸、无第三方品牌标识。
-- 压缩管线写成脚本（裁切比例、尺寸、质量参数固定），可重复执行。
+- Content illustrations (e.g. plots of code output) are **actually produced by the content code**: run the code → render the figure → compress into the package. This guarantees figure-code consistency and gives you clean copyright.
+- For atmosphere images (theme backgrounds), **do not scrape web images**: unlicensed web images are the two most frequent causes of copyright complaints and review rejections for personal accounts. Generate original art instead, and afterwards you must:
+  1. Crop the generator's watermark (usually bottom-right, ~5% of height);
+  2. Compress to the target size and per-image budget (e.g. 640 px / <100 KB);
+  3. Manually verify every image: no text, no watermark, no recognizable faces, no third-party brand marks.
+- Encode the pipeline as a script (fixed crop ratio, dimensions, quality) so it is repeatable.
 
-## 5. 单一来源与模板下发
+## 5. Single source of truth and template distribution
 
-同一类页面有多份副本时（如 pkgA/pkgB 各一份详情页），**只允许改模板，再跑下发脚本同步**（如 make_subpackages.py）。直接改副本必漂移——真实事故：模板更新了免责声明，分包副本没有，发布时才发现。下发后跑一致性检查确认两份逐字节一致。
+When the same page exists in multiple copies (e.g. a detail page in both pkgA and pkgB), **edit only the template, then run the distribution script** (e.g. make_subpackages.py). Editing a copy directly guarantees drift — real incident: the template gained a disclaimer, the subpackage copies did not, and it surfaced only at release time. After distribution, run the consistency gate to confirm the copies are byte-identical.
 
-## 6. README 作为项目状态板
+## 6. README as the project status board
 
-README 不写宣传语，写**状态**：
+The README carries **state**, not slogans:
 
-- 当前完成度与关键数字（都是实测值，不是估算）；
-- 门禁清单表：每道检查的名称、最近结果；
-- 待人工事项（如填 AppID、真机自测、备案号）；
-- 复现步骤：按编号列出全部检查命令。
+- Current completeness and key numbers (measured, not estimated);
+- Gate table: every check's name and latest result;
+- Pending human tasks (fill in AppID, on-device test, filing number);
+- Reproduction steps: every check command, numbered.
 
-这样任何人（包括三个月后的自己和另一个 AI）接手时，先看 README 就知道项目处于什么状态、下一步是什么。
+That way anyone — including you three months later, or another AI — knows the project's exact state and the next step just by reading the README.

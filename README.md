@@ -1,69 +1,146 @@
-# wechat-miniprogram-content-skill
+# WeChat Mini Program Content Skill
 
-**个人主体内容型微信小程序的开发方法论与工具箱** —— 从一个真实上架项目（365 张生物信息学代码卡的小程序）沉淀的可复用 Skill，覆盖「内容流水线 → 质量门禁 → 对抗性合规审查 → 主题换肤 → 备案上架」全流程。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/platform-WeChat%20Mini%20Program-07C160.svg)](https://developers.weixin.qq.com/miniprogram/en/dev/)
 
-## 这个仓库解决什么问题
+**A field playbook and toolchain for shipping content-focused WeChat Mini Programs under a personal (individual) developer account.**
 
-个人主体做内容型小程序（代码卡 / 知识卡 / 题库 / 每日一句……），写功能只占一半工作量，另一半是：
+`wechat-miniprogram-content-skill` is a reusable AI-agent skill plus two standalone gate scripts, distilled from a real shipped project: a 365-card bioinformatics code-card mini program with 10 categories, a daily-card feature, two subpackages, 9 themes, and 16 automated quality gates. It covers the full journey — content pipeline, quality gates, adversarial compliance review, CSS-variable theming, and ICP filing + release.
 
-- 2MB 主包里怎么装下几百条内容还不超限
-- 怎么保证几百条内容不重复、不错版、配图不失效
-- 自动化测试全绿，为什么还是被审核驳回
-- ICP 备案备注怎么写才不会被打电话
-- 主题换肤怎么做得可维护，而不是改一处坏三处
+![Five-stage workflow](assets/workflow.svg)
 
-本仓库把这些问题整理成**一份 Skill 文档 + 两个可直接运行的检查脚本**，可给 AI 编程助手（Claude / WorkBuddy 等）作为技能加载，也可纯人工阅读使用。
+## Highlights
 
-## 仓库结构
+- **Offline-first by design**: zero `wx.request`, zero `web-view` — one architectural decision that removes most of the compliance surface, at the price of a strictly managed 2 MB package budget.
+- **Gates as the specification**: every rule is a runnable script; all gates are re-executed before every delivery, never trusted from history.
+- **Compliance treated as adversarial**: the things automated tests cannot catch — category red lines, induced sharing, ICP remark wording — are exactly what gets personal accounts rejected, so they get their own checklist and scanner.
+- **Theming as variable overrides**: one `.theme-<id>` block per theme, zero page-code changes per skin, with a gate that prevents "half-applied themes".
+- **Original images only**: content figures are produced by the content code itself; atmosphere images are originally generated, watermark-cropped, and manually verified — no scraped web images, ever.
 
+## What it helps you answer
+
+- How do I fit hundreds of content items into a 2 MB main package without breaking over time?
+- How do I guarantee hundreds of content entries stay complete, consistent, and correctly routed?
+- Why did my mini program pass all tests but still get rejected in review?
+- How do I write ICP filing remarks (备案备注) that do not trigger a phone call from the reviewer?
+- How do I build multi-theme skinning that stays maintainable instead of "change one thing, break three"?
+- What can a personal-account mini program legally do — and what must be designed around on day one?
+
+## Why this is different
+
+- It is **distilled from a shipped project**, not written in the abstract — every rule exists because something actually broke or got rejected.
+- It treats **compliance as a first-class engineering stage**, with a scanner and a checklist, instead of a pre-release afterthought.
+- It encodes **originality-safe asset pipelines**: no scraped images, no copied icon packs, watermark-cropped generated art.
+- It ships **runnable gates**, not just prose: two Python scripts you can wire into CI today.
+
+## Workflow
+
+```mermaid
+flowchart LR
+    A["1. Content pipeline<br/>topic matrix · schedule<br/>two-layer data · size ledger"] --> B["2. Quality gates<br/>order · consistency · size<br/>release · runtime · theme"]
+    B --> C["3. Compliance review<br/>category red lines · APIs<br/>induced sharing · copyright"]
+    C --> D["4. Theming & UX<br/>CSS variable tokens<br/>one block per theme"]
+    D --> E["5. Filing & release<br/>ICP remark craft<br/>category · privacy · analytics"]
 ```
-├── SKILL.md                    # Skill 主体：五阶段工作流与核心判断
-├── references/
-│   ├── methodology.md          # 内容流水线：选题矩阵/双层数据/分包/配图管线/模板下发
-│   ├── quality-gates.md        # 质量门禁体系 + 12 条真实问题清单
-│   ├── compliance.md           # 对抗性合规审查清单 + ICP 备案备注模板
-│   └── theme-system.md         # CSS 变量主题令牌系统 + UX 差异化清单
-└── scripts/
-    ├── check_theme.py          # 主题令牌自检（7 项判据）
-    └── compliance_scan.py      # 合规静态初筛（高危/核对分级）
-```
 
-## 快速开始
+## Repository contents
 
-**作为 AI Skill 使用**：把本仓库目录复制到技能目录（如 `~/.workbuddy/skills/` 或项目的 `.workbuddy/skills/`），AI 会在开发/审查/上架小程序时自动加载。
+| Path | Purpose |
+| --- | --- |
+| `SKILL.md` | Main agent skill: five-stage workflow, core judgments, script usage, pitfall index |
+| `references/methodology.md` | Content pipeline: topic matrix, two-layer data, subpackages, illustration pipeline, template distribution |
+| `references/quality-gates.md` | The six-gate system with per-gate criteria + a 12-item real-world pitfall list |
+| `references/compliance.md` | Personal-account red lines, scan checklist, ICP remark template (from a real rejection case), release tasks |
+| `references/theme-system.md` | Theme-token design, three hard rules, background-image handling, UX differentiation checklist |
+| `scripts/check_theme.py` | Theme-token gate: 7 criteria, exit-code driven |
+| `scripts/compliance_scan.py` | Compliance first pass: HIGH-RISK vs REVIEW tiers, exit-code driven |
+| `assets/` | Diagrams used in this README |
 
-**脚本直接用**（Python 3，无第三方依赖）：
+## Quick start
+
+Requirements: Python 3.8+ (no third-party dependencies).
+
+Run the theme-token gate against any mini program that uses `utils/theme.js` + `app.wxss`:
 
 ```bash
-# 主题令牌自检：半套主题、失效选择器、旧色残留一次查全
-python scripts/check_theme.py /path/to/小程序源码
-
-# 合规初筛：网络/敏感API/诱导分享为高危项，词表命中供人工核对
-python scripts/compliance_scan.py /path/to/小程序源码 [/path/to/内容数据目录]
+python scripts/check_theme.py /path/to/miniprogram-source
 ```
 
-两个脚本都返回退出码（0 通过 / 1 有失败项），可直接串入 CI 或作为提交前门禁。
+Run the compliance first pass (add content-data directories to scan bundled copy):
 
-## 方法论速览
+```bash
+python scripts/compliance_scan.py /path/to/miniprogram-source /path/to/content-data
+```
 
-1. **离线优先**：零 `wx.request`、零 `web-view`，一步消掉大半合规面；代价是必须精算体积。
-2. **检查脚本即规格说明书**：每条规则都要能被脚本判定；每次交付前全部真跑，不信历史结果。
-3. **双层数据**：索引常驻主包、全文进分包按需加载，列表快、主包小。
-4. **主题即变量覆写**：换肤不改页面代码；有背景图的主题必须配遮罩变量。
-5. **合规是对抗性的**：质量门禁查不出的（类目红线、诱导分享、备案措辞）才是个人主体最容易被驳回的地方，单独扫描、逐条人工确认。
-6. **图片只用原创**：内容图由代码真实产出，氛围图原创生成（裁水印+压缩+人工核验），不用网图。
+Both scripts exit non-zero on failure, so they drop straight into CI or a pre-commit hook.
 
-## 项目亮点
+## Example use cases
 
-- **16 道自动化门禁**的真实经验抽象：排产检查、双端对版、体积台账、发布静态自检、mock wx 的 27 项行为断言、主题令牌自检
-- **mock wx 行为断言**：用 Node mock 微信 API 后直接跑真实页面代码做断言，而不是复刻逻辑到测试里
-- **备案备注模板**：来自真实被驳回案例（"Julia 是什么要解释"），含四个驳回原因的对策和可套用句式
-- **12 条真实问题清单**：硬编码色残留、模板与分包副本漂移、清空数据后状态跳变……每条都有修法
+| Situation | Command / action | What you get |
+| --- | --- | --- |
+| You added a 10th theme and want to be sure nothing is half-wired | `python scripts/check_theme.py <src>` | Missing variables, stale selectors, oversized images — with file-level detail |
+| You are about to submit for review | `python scripts/compliance_scan.py <src> <data>` | HIGH-RISK items (must be zero) + REVIEW items with context for human judgment |
+| Your ICP filing was rejected over remark wording | read `references/compliance.md` §4 | The four rejection causes and a ready-to-adapt remark template |
+| You are designing a second app in the same family | read `references/theme-system.md` §5 | Six deliberate UX differentiation moves to avoid a "reskin" impression |
 
-## 适用边界
+## Use as an AI-agent skill
 
-- 面向**个人主体**的内容型/工具型小程序；企业主体、含支付或 UGC 的小程序合规面不同，仅可参考门禁与主题部分。
-- 合规清单基于截至 2026 年的微信审核与备案实践，平台规则会变，上架前请以最新官方文档为准。
+Copy this repository into your agent's skills directory (e.g. `~/.workbuddy/skills/`, `~/.claude/skills/`, or a project-level equivalent). The agent will load it when you ask to build, review, re-theme, or publish a content mini program.
+
+Example prompts:
+
+```
+Build a 100-card vocabulary mini program for personal release; follow the offline-first shape and set up all quality gates.
+```
+
+```
+Review my mini program for compliance risks before I submit it — category, induced sharing, privacy, and image copyright.
+```
+
+Chinese examples:
+
+```
+用这套方法论帮我开发一个个人主体的每日一句小程序，内容 365 条，发布前把门禁都建好。
+```
+
+```
+我的备案被驳回了，说备注里 Julia 没解释清楚，帮我按模板重写一版备注。
+```
+
+## The six quality gates
+
+1. **check_order** — schedule sanity: no duplicates/gaps, spacing, difficulty progression
+2. **check_consistency** — index ↔ full-text ↔ routing ↔ images all agree
+3. **check_milestone_sum** — package size ledger against the 1950 KB / 2048 KB lines
+4. **check_release** — static release checks: syntax, WXML balance, event bindings, asset existence, no webp
+5. **runtime_check** — behavioral assertions driving the *real* page code through a mocked `wx`
+6. **check_theme** — theme-token integrity (this repo ships a generic version in `scripts/`)
+
+![Theme tokens](assets/theme-tokens.svg)
+
+## Scope and disclaimer
+
+- Written for **personal (individual) accounts** shipping content/tool mini programs. Enterprise accounts, payments, and UGC carry different obligations; only the gates and theming sections apply directly.
+- The compliance checklist reflects WeChat review and ICP filing practice as of 2026. Platform rules change — always confirm against the latest official documentation before release.
+- This project offers engineering guidance; it is not legal advice.
+
+## Contributing
+
+Issues and PRs are welcome — especially new gate criteria, additional compliance patterns from real rejection cases, and translations of the checklists.
+
+## Reading path
+
+1. [SKILL.md](SKILL.md) — the workflow and core judgments
+2. [references/methodology.md](references/methodology.md) — the content pipeline
+3. [references/quality-gates.md](references/quality-gates.md) — gates and pitfalls
+4. [references/compliance.md](references/compliance.md) — red lines and ICP craft
+5. [references/theme-system.md](references/theme-system.md) — theming and UX
+6. Run the two scripts on a real project
+
+## Keywords
+
+`WeChat Mini Program` · `personal developer account` · `content app` · `quality gates` · `compliance review` · `ICP filing` · `CSS variable theming` · `offline-first` · `agent skill`
 
 ## License
 
