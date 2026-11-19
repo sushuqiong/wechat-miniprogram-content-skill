@@ -1,57 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 240" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 240" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#8f959b"/>
     </marker>
   </defs>
-  <rect width="980" height="240" fill="#ffffff"/>
-  <text x="490" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#24292f">Five-stage workflow</text>
+  <rect width="1040" height="240" fill="#ffffff"/>
+  <text x="520" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#24292f">Six-stage workflow</text>
 
-  <!-- stage template: x positions 20, 212, 404, 596, 788 ; width 172 -->
+  <!-- 6 stages: x = 16, 188, 360, 532, 704, 876 ; width 148 -->
   <g>
-    <rect x="20" y="56" width="172" height="96" rx="10" fill="#f4f0ff" stroke="#6d4ae0" stroke-width="1.5"/>
-    <text x="106" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#5533c9">1. Content pipeline</text>
-    <text x="106" y="100" text-anchor="middle" font-size="10.5" fill="#57606a">topic matrix · schedule</text>
-    <text x="106" y="116" text-anchor="middle" font-size="10.5" fill="#57606a">two-layer data</text>
-    <text x="106" y="132" text-anchor="middle" font-size="10.5" fill="#57606a">size ledger</text>
+    <rect x="16" y="56" width="148" height="96" rx="10" fill="#f4f0ff" stroke="#6d4ae0" stroke-width="1.5"/>
+    <text x="90" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#5533c9">1. Content</text>
+    <text x="90" y="102" text-anchor="middle" font-size="10" fill="#57606a">topic matrix · schedule</text>
+    <text x="90" y="118" text-anchor="middle" font-size="10" fill="#57606a">two-layer data</text>
+    <text x="90" y="134" text-anchor="middle" font-size="10" fill="#57606a">size ledger</text>
   </g>
-  <line x1="192" y1="104" x2="208" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-  <g>
-    <rect x="212" y="56" width="172" height="96" rx="10" fill="#eaf4f2" stroke="#4f8a80" stroke-width="1.5"/>
-    <text x="298" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#3d6f66">2. Quality gates</text>
-    <text x="298" y="100" text-anchor="middle" font-size="10.5" fill="#57606a">order · consistency</text>
-    <text x="298" y="116" text-anchor="middle" font-size="10.5" fill="#57606a">size · release static</text>
-    <text x="298" y="132" text-anchor="middle" font-size="10.5" fill="#57606a">runtime assertions</text>
-  </g>
-  <line x1="384" y1="104" x2="400" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="164" y1="104" x2="184" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <g>
-    <rect x="404" y="56" width="172" height="96" rx="10" fill="#fdf1e7" stroke="#c4713f" stroke-width="1.5"/>
-    <text x="490" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#a85a2c">3. Compliance review</text>
-    <text x="490" y="100" text-anchor="middle" font-size="10.5" fill="#57606a">category red lines</text>
-    <text x="490" y="116" text-anchor="middle" font-size="10.5" fill="#57606a">induced sharing · APIs</text>
-    <text x="490" y="132" text-anchor="middle" font-size="10.5" fill="#57606a">image copyright</text>
+    <rect x="188" y="56" width="148" height="96" rx="10" fill="#eaf4f2" stroke="#4f8a80" stroke-width="1.5"/>
+    <text x="262" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#3d6f66">2. Quality gates</text>
+    <text x="262" y="102" text-anchor="middle" font-size="10" fill="#57606a">order · consistency</text>
+    <text x="262" y="118" text-anchor="middle" font-size="10" fill="#57606a">size · static · runtime</text>
+    <text x="262" y="134" text-anchor="middle" font-size="10" fill="#57606a">interaction · theme</text>
   </g>
-  <line x1="576" y1="104" x2="592" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="336" y1="104" x2="356" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <g>
-    <rect x="596" y="56" width="172" height="96" rx="10" fill="#eef2fa" stroke="#3c6e9e" stroke-width="1.5"/>
-    <text x="682" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#2f5a82">4. Theming &amp; UX</text>
-    <text x="682" y="100" text-anchor="middle" font-size="10.5" fill="#57606a">CSS variable tokens</text>
-    <text x="682" y="116" text-anchor="middle" font-size="10.5" fill="#57606a">one block per theme</text>
-    <text x="682" y="132" text-anchor="middle" font-size="10.5" fill="#57606a">theme-token gate</text>
+    <rect x="360" y="56" width="148" height="96" rx="10" fill="#fdf1e7" stroke="#c4713f" stroke-width="1.5"/>
+    <text x="434" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#a85a2c">3. Compliance</text>
+    <text x="434" y="102" text-anchor="middle" font-size="10" fill="#57606a">category red lines</text>
+    <text x="434" y="118" text-anchor="middle" font-size="10" fill="#57606a">sharing · APIs</text>
+    <text x="434" y="134" text-anchor="middle" font-size="10" fill="#57606a">image copyright</text>
   </g>
-  <line x1="768" y1="104" x2="784" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="508" y1="104" x2="528" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
 
   <g>
-    <rect x="788" y="56" width="172" height="96" rx="10" fill="#f0eef2" stroke="#6f6682" stroke-width="1.5"/>
-    <text x="874" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#564e6b">5. Filing &amp; release</text>
-    <text x="874" y="100" text-anchor="middle" font-size="10.5" fill="#57606a">ICP remark craft</text>
-    <text x="874" y="116" text-anchor="middle" font-size="10.5" fill="#57606a">category &amp; privacy</text>
-    <text x="874" y="132" text-anchor="middle" font-size="10.5" fill="#57606a">analytics events</text>
+    <rect x="532" y="56" width="148" height="96" rx="10" fill="#eef2fa" stroke="#3c6e9e" stroke-width="1.5"/>
+    <text x="606" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#2f5a82">4. Theming &amp; UX</text>
+    <text x="606" y="102" text-anchor="middle" font-size="10" fill="#57606a">CSS variable tokens</text>
+    <text x="606" y="118" text-anchor="middle" font-size="10" fill="#57606a">one block per theme</text>
+    <text x="606" y="134" text-anchor="middle" font-size="10" fill="#57606a">theme-token gate</text>
+  </g>
+  <line x1="680" y1="104" x2="700" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="704" y="56" width="148" height="96" rx="10" fill="#f5eef7" stroke="#9c5aa8" stroke-width="1.5"/>
+    <text x="778" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#7a3d85">5. Interaction</text>
+    <text x="778" y="102" text-anchor="middle" font-size="10" fill="#57606a">copy fallback · swipe</text>
+    <text x="778" y="118" text-anchor="middle" font-size="10" fill="#57606a">scroll-view height</text>
+    <text x="778" y="134" text-anchor="middle" font-size="10" fill="#57606a">native-JS pitfalls</text>
+  </g>
+  <line x1="852" y1="104" x2="872" y2="104" stroke="#8f959b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g>
+    <rect x="876" y="56" width="148" height="96" rx="10" fill="#f0eef2" stroke="#6f6682" stroke-width="1.5"/>
+    <text x="950" y="82" text-anchor="middle" font-size="11.5" font-weight="600" fill="#564e6b">6. Filing &amp; release</text>
+    <text x="950" y="102" text-anchor="middle" font-size="10" fill="#57606a">ICP remark · privacy</text>
+    <text x="950" y="118" text-anchor="middle" font-size="10" fill="#57606a">CLI / wechatide</text>
+    <text x="950" y="134" text-anchor="middle" font-size="10" fill="#57606a">version bump</text>
   </g>
 
-  <text x="490" y="196" text-anchor="middle" font-size="11.5" fill="#57606a">Every gate is a standalone script — rerun all of them before every delivery, never trust historical results.</text>
-  <text x="490" y="216" text-anchor="middle" font-size="11.5" fill="#57606a">Compliance is adversarial: what the gates cannot catch is exactly what gets personal accounts rejected.</text>
+  <text x="520" y="192" text-anchor="middle" font-size="11.5" fill="#57606a">Every gate is a standalone script — rerun all of them before every delivery, never trust historical results.</text>
+  <text x="520" y="212" text-anchor="middle" font-size="11.5" fill="#57606a">Compliance is adversarial: what the gates cannot catch is exactly what gets personal accounts rejected.</text>
 </svg>

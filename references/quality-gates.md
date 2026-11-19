@@ -3,7 +3,7 @@
 ## Contents
 
 1. Gate design principles
-2. The minimum gate set (six gates)
+2. The minimum gate set (seven gates)
 3. Criteria per gate
 4. Pitfall list (reverse-engineered from real incidents)
 5. Best practices
@@ -25,6 +25,7 @@
 | 4 | check_release — static release checks | JS syntax errors, unclosed WXML tags, missing event bindings, references to nonexistent images, unsupported formats (webp) |
 | 5 | runtime_check — behavioral assertions | Runtime logic errors that static checks cannot see |
 | 6 | check_theme — theme tokens | "Half-applied themes" (mandatory once theming exists) |
+| 7 | check_interaction — interaction robustness | Copy failure with no fallback, non-copyable rich-text, missing wx:key, iOS date NaN |
 
 ## 3. Criteria per gate
 
@@ -40,6 +41,8 @@
 
 **check_theme**: see references/theme-system.md; script is scripts/check_theme.py.
 
+**check_interaction**: see references/interaction-robustness.md; script is scripts/check_interaction.py. FAIL on: clipboard used with no `onShowCopyFallback`, rich-text detail page with no copy handler, `wx:for` without `wx:key`, hyphenated `new Date('YYYY-MM-DD')` literal (comments excluded). REVIEW (non-failing) on: scroll container with only max-height, swipe handler with no debounce marker, 900 ms timestamp-blackout pattern.
+
 ## 4. Pitfall list (reverse-engineered from real incidents)
 
 ### Theming / styles
@@ -54,6 +57,13 @@
 7. Favorites sorted by card ID → the just-favorited card sinks to the bottom; users think favoriting failed. Sort by favorite time, newest first.
 8. No debounce on card swiping → animation stutters on rapid taps. Add a ~260 ms lock window, plus a behavioral assertion.
 9. "Tap to view full image" that actually navigates to the detail page → copy does not match behavior. Either truly preview (previewImage) or fix the copy.
+
+### Interaction / copy (new — see interaction-robustness.md)
+13. Copy button calls `setClipboardData` but rich-text code cannot be selected; privacy-authorize failure ends in a toast → three-layer fallback (direct write → authorize retry → selectable-text overlay), one shared helper.
+14. Code-area `catchtouch` handler stores a timestamp and `onTouchEnd` blocks swipes for 900 ms → a legitimate swipe right after scrolling is swallowed. Use a boolean `_noSwipe` cleared at gesture end.
+15. Vertical `scroll-view` with only `max-height` → no scroll range on some base libraries; set `height: 58vh; max-height: 820rpx`.
+16. No debounce on flip → rapid taps stutter; ~260 ms lock shared by button and swipe.
+17. `new Date('2025-01-01 10:00')` → NaN on iOS; `str.replace(/-/g,'/')` first. `navigateTo` past 10 levels fails silently.
 
 ### Engineering
 10. Template and subpackage copies drift → single source + scripted distribution + post-distribution consistency check.
