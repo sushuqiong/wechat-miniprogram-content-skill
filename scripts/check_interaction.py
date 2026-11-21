@@ -11,8 +11,11 @@ and never fail the gate. This is a SCREEN, not a verdict.
 FAIL criteria:
   1. setClipboardData is used but the project has no onShowCopyFallback (no selectable
      text escape hatch for rich-text code blocks).
-  2. A rich-text code block exists in a detail page but that page has no copy handler
-     at all (neither a copy button nor a fallback overlay).
+  2. A rich-text code block exists in a detail page but NO page in the project
+     offers an onCopyCode entry. A read-only detail page is legitimate when the
+     daily/home page is the single authoritative copy entry. (A detail code
+     block rendered line-by-line with <text> is also a legitimate read-only
+     layout; see references/interaction-robustness.md section 9.)
   3. wx:for appears without wx:key somewhere in WXML.
   4. iOS-unsafe date literal new Date('YYYY-MM-DD ...') (hyphenated string) is present.
 
@@ -74,7 +77,13 @@ if uses_clipboard and not has_fallback:
 else:
     print('PASS  F1 clipboard fallback' + ('  (no clipboard usage)' if not uses_clipboard else ''))
 
-# F2: rich-text code block in a detail page with no copy handler at all
+# F2: rich-text code block in a detail page with no copy handler at all.
+# Two layouts are legitimate: (a) the detail page copies its own code; (b) the
+# detail page is read-only and the ONE authoritative copy entry lives on the
+# daily/home page (rich-text cannot be long-press-selected, and privacy-authorize
+# failures are harder to recover from on a pushed page). Only fail when the whole
+# project has no onCopyCode entry at all.
+project_has_copy = any('onCopyCode' in read(p) for p in js_files)
 rich_detail_bad = []
 for p in js_files:
     base = os.path.splitext(p)[0]
@@ -88,7 +97,7 @@ for p in js_files:
         has_copy = ('onCopy' in js_src or 'copyCode' in js_src or
                     'setClipboardData' in js_src or 'onShowCopyFallback' in js_src or
                     'onCopyCode' in js_src)
-        if not has_copy:
+        if not has_copy and not project_has_copy:
             rich_detail_bad.append(os.path.relpath(p, APP))
 if rich_detail_bad:
     fail('F2 rich-text detail has no copy handler', ','.join(rich_detail_bad))

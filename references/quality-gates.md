@@ -61,7 +61,7 @@
 ### Interaction / copy (new — see interaction-robustness.md)
 13. Copy button calls `setClipboardData` but rich-text code cannot be selected; privacy-authorize failure ends in a toast → three-layer fallback (direct write → authorize retry → selectable-text overlay), one shared helper.
 14. Code-area `catchtouch` handler stores a timestamp and `onTouchEnd` blocks swipes for 900 ms → a legitimate swipe right after scrolling is swallowed. Use a boolean `_noSwipe` cleared at gesture end.
-15. Vertical `scroll-view` with only `max-height` → no scroll range on some base libraries; set `height: 58vh; max-height: 820rpx`.
+15. Vertical `scroll-view` with only `max-height` → no scroll range on some base libraries. Do NOT patch it with a constant `height: 58vh; max-height: 820rpx`: short code then sits in a half-screen empty box. Compute a definite height from the code in JS and write it as an inline style (`style="height:{{codeH}}rpx"`, clamp ~160–600rpx, count CJK/full-width characters as two units) so short code fits and long code scrolls inside the block; see interaction-robustness.md section 4.
 16. No debounce on flip → rapid taps stutter; ~260 ms lock shared by button and swipe.
 17. `new Date('2025-01-01 10:00')` → NaN on iOS; `str.replace(/-/g,'/')` first. `navigateTo` past 10 levels fails silently.
 

@@ -95,7 +95,8 @@ All three scripts exit non-zero when a FAIL criterion is hit, so they drop strai
 | You are about to submit for review | `python scripts/compliance_scan.py <src> <data>` | HIGH-RISK items (must be zero) + REVIEW items with context for human judgment |
 | Your ICP filing was rejected over remark wording | read `references/compliance.md` §4 | The four rejection causes and a ready-to-adapt remark template |
 | Copy-code fails or "long-press to copy" does nothing | read `references/interaction-robustness.md` §1-2 + run `check_interaction.py` | The three-layer fallback and selectable-text overlay; rich-text cannot be selected |
-| Swipes get swallowed after scrolling code, or scroll-view will not scroll | read `references/interaction-robustness.md` §3-4 | Boolean `_noSwipe` + debounce; fixed height for vertical scroll-view |
+| Swipes get swallowed after scrolling code, or scroll-view will not scroll | read `references/interaction-robustness.md` §3-4 | Boolean `_noSwipe` + debounce; definite, content-adaptive height for vertical scroll-view |
+| Highlighted code collapses into one line and will not scroll on the detail page | read `references/interaction-robustness.md` §9 | `rich-text` folds `\n`; render one `<text>` per line instead of one `rich-text` node — static gates cannot see this |
 | You need to upload / re-upload a build from the command line | read `references/platform-and-release.md` §3-6 | Verified `cli.bat upload` commands, version-bump discipline, manual console steps |
 | You are designing a second app in the same family | read `references/theme-system.md` §5 | Six deliberate UX differentiation moves to avoid a "reskin" impression |
 
